@@ -1,0 +1,26 @@
+{
+  "name": "github",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/github.js",
+  "bin": {
+    "github": "bin/github.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "config": "^2.0.1",
+    "fecha": "^2.3.3",
+    "fs-extra": "^7.0.0",
+    "github-api": "^3.0.0",
+    "js-yaml": "^3.12.0",
+    "lodash": "^4.17.10",
+    "meow": "^5.0.0",
+    "p-map": "^1.2.0",
+    "statsjs": "^1.0.7"
+  }
+}
