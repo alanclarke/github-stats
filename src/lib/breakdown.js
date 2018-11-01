@@ -19,7 +19,7 @@ async function next (username, start, fresh, edges = []) {
   if (fresh) await db.unset(cacheKey(username, after))
   const data = await getPageMemoized(username, after)
   const newEdges = _.get(data, 'user.pullRequests.edges')
-  if (newEdges) {
+  if (newEdges && newEdges.length) {
     edges = edges.concat(newEdges)
     if (start && edges.length && _.last(edges).node.createdAt > start) return next(username, start, fresh, edges)
   }
