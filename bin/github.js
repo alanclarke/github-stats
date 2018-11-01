@@ -9,35 +9,36 @@ const pMap = require('p-map')
 const meow = require('meow')
 const cli = meow(
   `
-github prs user[s] --commits
-github summary user[s]
+github prs --user user[s] --commits
+github summary --user user[s]
 `,
   {
     flags: {
       user: { type: 'string', alias: 'u' },
-      from: { type: 'string', alias: 'f' },
-      to: { type: 'string', alias: 't' },
+      start: { type: 'string', alias: 's' },
+      end: { type: 'string', alias: 'e' },
+      fresh: { type: 'boolean', alias: 'f', default: false },
       commits: { type: 'boolean', default: false }
     }
   }
 )
 
 ;(async () => {
-  const { user, from, to, commits } = cli.flags
+  const { user, start, end, fresh, commits } = cli.flags
   const members = user ? user.split(/[\s,]+/gi) : await getMembers('qubitdigital', 'eng')
   let results
   switch (cli.input[0]) {
     case 'summary':
-      results = await pMap(members, member => getSummary(member, from, to, { commits }), {
+      results = await pMap(members, member => getSummary(member, start, end, { fresh, commits }), {
         concurrency: 1
       })
       console.log(_.orderBy(results, r => r.prs, 'desc'))
       break
     case 'prs':
-      results = await pMap(members, member => getPrs(members, from, to, { commits }), {
+      results = await pMap(members, member => getPrs(members, start, end, { fresh, commits }), {
         concurrency: 1
       })
-      console.log(_.orderBy(results, r => r.prs, 'desc'))
+      console.log(_.orderBy(members, r => r, 'desc'))
       break
     default: console.log(cli)
   }

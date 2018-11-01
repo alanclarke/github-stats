@@ -2,8 +2,8 @@ const _ = require('lodash')
 const getBreakdown = require('./lib/breakdown')
 const stats = require('statsjs')
 
-module.exports = async function summary (username, from, to, opts = {}) {
-  const breakdown = await getBreakdown(username, from, to)
+module.exports = async function summary (username, start, end, options = {}) {
+  const breakdown = await getBreakdown(username, start, end, options)
   const prs = _.flatten(_.values(breakdown))
   return {
     username,

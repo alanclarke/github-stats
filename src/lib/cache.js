@@ -19,5 +19,11 @@ module.exports = function createCache (dir) {
     await fs.writeJson(dbPath, all)
   }
 
-  return { get, set }
+  async function unset (key, value) {
+    const all = await getAll()
+    delete all[key]
+    await fs.writeJson(dbPath, all)
+  }
+
+  return { get, set, unset }
 }

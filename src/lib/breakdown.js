@@ -1,28 +1,32 @@
 const _ = require('lodash')
 const axios = require('./axios')
 const retry = require('./retry')
+const db = require('./db')
 const memoize = require('./memoize')
+const cacheKey = (username, after) => `${username}:${after || ''}`
+const getPageMemoized = memoize(getPage, cacheKey)
 
-module.exports = async function breakdown (username, from, to) {
-  let edges = (await next(username, from))
-  if (to) edges = edges.filter(e => e.node.createdAt < to)
+module.exports = async function breakdown (username, start, end, { fresh }) {
+  let edges = (await next(username, start, fresh))
+  if (end) edges = edges.filter(e => e.node.createdAt < end)
+  if (start) edges = edges.filter(e => e.node.createdAt > start)
   return _.groupBy(edges.map(e => e.node), node => node.repository.name)
 }
 
-async function next (username, from, edges) {
-  edges = edges || []
+async function next (username, start, fresh, edges = []) {
   let after
   if (edges.length && _.last(edges).cursor) after = _.last(edges).cursor
-  const data = await getPage(username, after)
+  if (fresh) await db.unset(cacheKey(username, after))
+  const data = await getPageMemoized(username, after)
   const newEdges = _.get(data, 'user.pullRequests.edges')
   if (newEdges) {
     edges = edges.concat(newEdges)
-    if (from && edges.length && _.last(edges).node.createdAt > from) return next(username, from, edges)
+    if (start && edges.length && _.last(edges).node.createdAt > start) return next(username, start, fresh, edges)
   }
   return edges
 }
 
-const getPage = memoize(async function getPage (username, after) {
+async function getPage (username, after) {
   console.log('fetching data for ' + username)
   const { data } = await retry(() => axios.post(`https://api.github.com/graphql`, {
     variables: {
@@ -71,4 +75,4 @@ const getPage = memoize(async function getPage (username, after) {
   })
   if (data.errors) throw data.errors
   return data.data
-}, (username, after) => `${username}:${after || ''}`)
+}

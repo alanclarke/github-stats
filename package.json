@@ -4,7 +4,7 @@
   "description": "",
   "main": "bin/github.js",
   "bin": {
-    "github": "bin/github.js"
+    "github-stats": "bin/github.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

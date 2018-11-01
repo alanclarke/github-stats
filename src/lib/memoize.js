@@ -1,14 +1,12 @@
-const path = require('path')
-const createCache = require('./cache')
-const cache = createCache(path.join(__dirname, '../../.cache'))
+const db = require('./db')
 
 module.exports = function memoize (fn, getKey) {
   return async (...args) => {
     const key = getKey(...args)
-    let value = await cache.get(key)
+    let value = await db.get(key)
     if (value !== void 0) return value
     value = await fn(...args)
-    await cache.set(key, value)
+    await db.set(key, value)
     return value
   }
 }
