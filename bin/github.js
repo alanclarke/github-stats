@@ -38,7 +38,7 @@ github summary --user user[s]
       results = await pMap(members, member => getPrs(members, start, end, { fresh, commits }), {
         concurrency: 1
       })
-      console.log(_.orderBy(members, r => r, 'desc'))
+      console.log(results)
       break
     default: console.log(cli)
   }
