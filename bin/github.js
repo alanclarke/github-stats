@@ -35,7 +35,7 @@ github summary --user user[s]
       console.log(_.orderBy(results, r => r.prs, 'desc'))
       break
     case 'prs':
-      results = await pMap(members, member => getPrs(members, start, end, { fresh, commits }), {
+      results = await pMap(members, member => getPrs(member, start, end, { fresh, commits }), {
         concurrency: 1
       })
       console.log(results)
