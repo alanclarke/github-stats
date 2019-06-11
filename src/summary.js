@@ -9,6 +9,9 @@ module.exports = async function summary (username, start, end, options = {}) {
     username,
     prs: prs.length,
     repos: Object.keys(breakdown).length,
+    totalCommits: _.sum(prs.map(pr => pr.commits.edges.length)),
+    totalAdditions: _.sum(prs.map(pr => pr.additions)),
+    totalDeletions: _.sum(prs.map(pr => pr.deletions)),
     avgCommits: stats(prs.map(pr => pr.commits.edges.length)).removeOutliers().mean().toFixed(2),
     avgAdditions: stats(prs.map(pr => pr.additions)).removeOutliers().mean().toFixed(2),
     avgDeletions: stats(prs.map(pr => pr.deletions)).removeOutliers().mean().toFixed(2)

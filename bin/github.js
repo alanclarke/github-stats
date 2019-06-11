@@ -5,6 +5,7 @@ const _ = require('lodash')
 const getMembers = require('../src/members')
 const getSummary = require('../src/summary')
 const getPrs = require('../src/prs')
+const getText = require('../src/text')
 const pMap = require('p-map')
 const meow = require('meow')
 const cli = meow(
@@ -32,13 +33,19 @@ github summary --user user[s]
       results = await pMap(members, member => getSummary(member, start, end, { fresh, commits }), {
         concurrency: 1
       })
-      console.log(_.orderBy(results, r => r.prs, 'desc'))
+      console.log(JSON.stringify(_.orderBy(results, r => r.prs, 'desc'), null, 2))
       break
     case 'prs':
       results = await pMap(members, member => getPrs(member, start, end, { fresh, commits }), {
         concurrency: 1
       })
-      console.log(results)
+      console.log(JSON.stringify(results, null, 2))
+      break
+    case 'text':
+      results = await pMap(members, member => getText(member, start, end, { fresh, commits }), {
+        concurrency: 1
+      })
+      results.forEach(userMessages => userMessages.forEach(msg => console.log(msg)))
       break
     default: console.log(cli)
   }

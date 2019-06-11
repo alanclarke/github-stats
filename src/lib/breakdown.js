@@ -2,6 +2,7 @@ const _ = require('lodash')
 const axios = require('./axios')
 const retry = require('./retry')
 const db = require('./db')
+const ms = require('ms')
 const memoize = require('./memoize')
 const cacheKey = (username, after) => `${username}:${after || ''}`
 const getPageMemoized = memoize(getPage, cacheKey)
@@ -28,6 +29,7 @@ async function next (username, start, fresh, edges = []) {
 
 async function getPage (username, after) {
   console.log('fetching data for ' + username)
+  if (after) await delay(ms('2s'))
   const { data } = await retry(() => axios.post(`https://api.github.com/graphql`, {
     variables: {
       username: username
@@ -49,7 +51,7 @@ async function getPage (username, after) {
                 url
                 additions
                 deletions
-                commits(first:100) {
+                commits(first:250) {
                   edges {
                     node {
                       commit {
@@ -75,4 +77,8 @@ async function getPage (username, after) {
   })
   if (data.errors) throw data.errors
   return data.data
+}
+
+function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
