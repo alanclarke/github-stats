@@ -1,15 +1,18 @@
 const _ = require('lodash')
-const getBreakdown = require('./lib/breakdown')
+const getBreakdown = require('./breakdown')
 
 module.exports = async function prs (username, start, end, options = { }) {
-  const breakdown = await getBreakdown(username, start, end, options)
-  return _.mapValues(breakdown, edges => edges.map(e => {
+  let prs = _.map(await getBreakdown(username, start, end, options), 'node')
+  if (end) prs = prs.filter(pr => pr.createdAt < end)
+  if (start) prs = prs.filter(pr => pr.createdAt > start)
+  const byRepo = _.groupBy(prs, 'repository.name')
+  return _.mapValues(byRepo, prs => prs.map(pr => {
     if (options.commits) {
       return {
-        name: e.title,
-        commits: e.commits.edges.map(e => e.node.commit.message)
+        name: pr.title,
+        commits: pr.commits.edges.map(commit => commit.node.commit.message)
       }
     }
-    return e.title
+    return pr.title
   }))
 }
