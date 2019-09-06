@@ -1,10 +1,9 @@
-module.exports = async function retry (fn, times) {
+module.exports = async function retry (fn, times = 2) {
   times = times || 1
   let err
   while (times--) {
     try {
-      let result = await fn()
-      return result
+      return await fn()
     } catch (error) {
       err = error
     }
