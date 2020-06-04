@@ -4,6 +4,7 @@ const stats = require('statsjs')
 
 module.exports = async function summary (username, options = {}) {
   let prs = _.map(await getBreakdown(username, options), 'node')
+  if (options.end) prs = prs.filter(pr => pr.createdAt < end)
   if (options.start) prs = prs.filter(pr => pr.createdAt > start)
   if (options.owners) prs = prs.filter(pr => {
     return options.owners.includes(pr.repository.owner.login)
