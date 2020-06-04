@@ -2,10 +2,12 @@ const _ = require('lodash')
 const getBreakdown = require('./breakdown')
 const stats = require('statsjs')
 
-module.exports = async function summary (username, start, end, options = {}) {
+module.exports = async function summary (username, options = {}) {
   let prs = _.map(await getBreakdown(username, options), 'node')
-  if (end) prs = prs.filter(pr => pr.createdAt < end)
-  if (start) prs = prs.filter(pr => pr.createdAt > start)
+  if (options.start) prs = prs.filter(pr => pr.createdAt > start)
+  if (options.owners) prs = prs.filter(pr => {
+    return options.owners.includes(pr.repository.owner.login)
+  })
   const byRepo = _.groupBy(prs, 'repository.name')
   return {
     username,
