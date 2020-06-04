@@ -10,47 +10,48 @@ const meow = require('meow')
 const _ = require('lodash')
 const cli = meow(
   `
-github prs --user user[s] --commits
-github summary --user user[s]
+github prs --users user --commits
+github summary --users user
+github members organisation
 `,
   {
     flags: {
-      user: { type: 'string', alias: 'u' },
+      users: { type: 'string', alias: 'u' },
       start: { type: 'string', alias: 's', default: false },
       end: { type: 'string', alias: 'e', default: false },
       fresh: { type: 'boolean', alias: 'f', default: false },
       commits: { type: 'boolean', alias: 'c', default: false },
-      organization: { type: 'string', alias: 'o', default: false },
+      owners: { type: 'string', alias: 'o', default: false },
       team: { type: 'string', alias: 't', default: false }
     }
   }
 )
 
 ;(async () => {
-  const { user, start, end, fresh, commits, organization, team } = cli.flags
-  let results, members
+  let { users, start, end, fresh, commits, owners, team } = cli.flags
+  let results
+  if (users && !Array.isArray(users)) users = [users]
+  if (owners && !Array.isArray(owners)) owners = [owners]
+  const options = { fresh, commits, start, end, owners }
   switch (cli.input[0]) {
     case 'members':
-      members = await getMembers(organization, team, { fresh })
+      const members = await getMembers(cli.input[1], team, { fresh })
       console.log(members)
       break
     case 'summary':
-      members = user.split(/[\s,]+/gi)
-      results = await pMap(members, member => getSummary(member, start, end, { fresh, commits }), {
+      results = await pMap(users, member => getSummary(member, options), {
         concurrency: 1
       })
       console.log(JSON.stringify(_.orderBy(results, r => r.prs, 'desc'), null, 2))
       break
     case 'prs':
-      members = user.split(/[\s,]+/gi)
-      results = await pMap(members, member => getPrs(member, start, end, { fresh, commits }), {
+      results = await pMap(users, member => getPrs(member, options), {
         concurrency: 1
       })
       console.log(JSON.stringify(results, null, 2))
       break
     case 'text':
-      members = user.split(/[\s,]+/gi)
-      results = await pMap(members, member => getText(member, start, end, { fresh, commits }), {
+      results = await pMap(users, member => getText(member, options), {
         concurrency: 1
       })
       results.forEach(userMessages => userMessages.forEach(msg => console.log(msg)))
