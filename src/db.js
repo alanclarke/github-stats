@@ -1,9 +1,11 @@
 const _ = require('lodash')
+const { ensureDir } = require('fs-extra')
 const level = require('level')
 const path = require('path')
 const { DB_PATH } = require('./constants')
 
-module.exports = _.memoize(function createDB (name) {
+module.exports = _.memoize(async function createDB (name) {
+  await ensureDir(DB_PATH)
   const db = level(path.join(DB_PATH, name + '.level'))
 
   return {
@@ -34,23 +36,27 @@ module.exports = _.memoize(function createDB (name) {
   }
 
   async function putAll (obj) {
-    return db.batch(_.map(obj, (val, key) => {
-      return {
-        type: 'put',
-        key: key,
-        value: JSON.stringify(val)
-      }
-    }))
+    return db.batch(
+      _.map(obj, (val, key) => {
+        return {
+          type: 'put',
+          key: key,
+          value: JSON.stringify(val)
+        }
+      })
+    )
   }
 
   async function delAll () {
     const all = await getAll()
-    return db.batch(_.map(all, (val, key) => {
-      return {
-        type: 'del',
-        key: key
-      }
-    }))
+    return db.batch(
+      _.map(all, (val, key) => {
+        return {
+          type: 'del',
+          key: key
+        }
+      })
+    )
   }
 
   async function getAll () {

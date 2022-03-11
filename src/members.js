@@ -1,11 +1,11 @@
 const _ = require('lodash')
 const axios = require('./axios')
 const createDB = require('./db')
-const cursorDB = createDB('cursors')
 
 module.exports = async function getMembers (organisation, team, { fresh }) {
   const key = [organisation, team].join('.')
-  const membersDB = createDB(key)
+  const cursorDB = await createDB('cursors')
+  const membersDB = await createDB(key)
   let cursor, members
   if (fresh) {
     await cursorDB.del(key)
@@ -13,7 +13,12 @@ module.exports = async function getMembers (organisation, team, { fresh }) {
   }
   cursor = await cursorDB.get(key)
   members = await membersDB.get(key)
-  const { members: newMembers, cursor: newCursor } = await crawlMembers(organisation, team, members, cursor)
+  const { members: newMembers, cursor: newCursor } = await crawlMembers(
+    organisation,
+    team,
+    members,
+    cursor
+  )
   await cursorDB.put(key, newCursor)
   await membersDB.put(key, newMembers)
   return newMembers
